@@ -2,9 +2,13 @@ import { Component, ViewChild } from '@angular/core';
 import { Nav, Platform } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
+import { Push, PushObject, PushOptions } from '@ionic-native/push';
+import { AlertController } from 'ionic-angular';
+
 
 import { HomePage } from '../pages/home/home';
 import { ListPage } from '../pages/list/list';
+import { AboutPage } from '../pages/about/about'
 
 @Component({
   templateUrl: 'app.html'
@@ -16,13 +20,15 @@ export class MyApp {
 
   pages: Array<{title: string, component: any}>;
 
-  constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen) {
+  constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen,
+              private push: Push, public alertCtrl: AlertController) {
     this.initializeApp();
 
     // used for an example of ngFor and navigation
     this.pages = [
       { title: 'Home', component: HomePage },
-      { title: 'List', component: ListPage }
+      // { title: 'List', component: ListPage }
+      { title: 'About', component: AboutPage }
     ];
 
   }
@@ -33,6 +39,7 @@ export class MyApp {
       // Here you can do any higher level native things you might need.
       this.statusBar.styleDefault();
       this.splashScreen.hide();
+      this.pushSetup();
     });
   }
 
@@ -41,4 +48,45 @@ export class MyApp {
     // we wouldn't want the back button to show in this scenario
     this.nav.setRoot(page.component);
   }
+  pushSetup(){
+    const options: PushOptions = {
+      android: {
+        senderID: '540743657036'
+      },
+      ios: {
+          alert: 'true',
+          badge: true,
+          sound: 'false'
+      }
+   }
+   
+   const pushObject: PushObject = this.push.init(options);
+   
+   
+   pushObject.on('notification').subscribe((notification: any) => {
+     console.log('Received a notification', notification);
+     this.showAlert(notification.title, notification.message);
+    });
+   
+   pushObject.on('registration').subscribe((registration: any) => console.log('Device registered', registration));
+   
+   pushObject.on('error').subscribe(error => console.error('Error with Push plugin', error));
+   
+  }
+  showAlert(title: any, message: string) {
+    var titleValue: string;
+    if (title == undefined){
+      titleValue = '';
+    }
+    else {
+      titleValue = title;
+    }  
+    const alert = this.alertCtrl.create({
+      title: titleValue,
+      subTitle: message,
+      buttons: ['OK']
+    });
+    alert.present();
+  }
+
 }
