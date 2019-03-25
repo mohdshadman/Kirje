@@ -4,6 +4,7 @@ import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { Push, PushObject, PushOptions } from '@ionic-native/push';
 import { AlertController } from 'ionic-angular';
+import { Http , Headers, RequestOptions} from '@angular/http';
 
 
 import { HomePage } from '../pages/home/home';
@@ -21,7 +22,7 @@ export class MyApp {
   pages: Array<{title: string, component: any}>;
 
   constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen,
-              private push: Push, public alertCtrl: AlertController) {
+              private push: Push, public alertCtrl: AlertController, public http: Http) {
     this.initializeApp();
 
     // used for an example of ngFor and navigation
@@ -68,7 +69,10 @@ export class MyApp {
      this.showAlert(notification.title, notification.message);
     });
    
-   pushObject.on('registration').subscribe((registration: any) => console.log('Device registered', registration));
+   pushObject.on('registration').subscribe((registration: any) => {
+   this.dopost(101);
+   console.log('Device registered', registration);
+   });
    
    pushObject.on('error').subscribe(error => console.error('Error with Push plugin', error));
    
@@ -88,5 +92,32 @@ export class MyApp {
     });
     alert.present();
   }
+  dopost(id: any){
+    let url = "http://103.241.181.83:8000/api/deviceid.php?key=apnatimeaayega";
+    //let url ="http://jsonplaceholder.typicode.com/posts";
+    let headers = new Headers();
+    headers.append('Access-Control-Allow-Origin' , '*');
+    headers.append('Access-Control-Allow-Methods', '*');
+    //headers.append("Accept", 'application/json');
+    headers.append('Content-Type', 'application/json' );
+    //let data =  new FormData();
+     //data.append('device_id', id );
+     let data = {
+       'device_id': id
+      };
+      let options = new RequestOptions({ headers:headers, withCredentials: true});
+
+       //this.http.post(url,data, ).subscribe(data => console.log(data));
+      console.log(data);
+       this.http.post(url, data, options)
+      .subscribe(data => {
+        console.log("success");
+        console.log(data['_body']);
+       }, error => {
+        console.log(error);// Error getting the data
+      });
+    
+  }
 
 }
+ 
