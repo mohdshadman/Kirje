@@ -5,6 +5,7 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 import { Push, PushObject, PushOptions } from '@ionic-native/push';
 import { AlertController } from 'ionic-angular';
 import { Http , Headers, RequestOptions} from '@angular/http';
+import { IBeacon } from '@ionic-native/ibeacon';
 
 
 import { HomePage } from '../pages/home/home';
@@ -22,7 +23,8 @@ export class MyApp {
   pages: Array<{title: string, component: any}>;
 
   constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen,
-              private push: Push, public alertCtrl: AlertController, public http: Http) {
+              private push: Push, public alertCtrl: AlertController, public http: Http,
+              private ibeacon: IBeacon) {
     this.initializeApp();
 
     // used for an example of ngFor and navigation
@@ -41,6 +43,7 @@ export class MyApp {
       this.statusBar.styleDefault();
       this.splashScreen.hide();
       this.pushSetup();
+      this.beaconMonitoring();
     });
   }
 
@@ -70,7 +73,7 @@ export class MyApp {
     });
    
    pushObject.on('registration').subscribe((registration: any) => {
-   this.dopost(101);
+   //this.dopost(101);
    console.log('Device registered', registration);
    });
    
@@ -119,5 +122,46 @@ export class MyApp {
     
   }
 
+  beaconMonitoring() { 
+ // Request permission to use location on iOS
+this.ibeacon.requestAlwaysAuthorization();
+// create a new delegate and register it with the native layer
+let delegate = this.ibeacon.Delegate();
+
+// Subscribe to some of the delegate's event handlers
+delegate.didRangeBeaconsInRegion()
+  .subscribe(
+    data => console.log('didRangeBeaconsInRegion: ', data),
+    error => console.error()
+  );
+delegate.didStartMonitoringForRegion()
+  .subscribe(
+    data => console.log('didStartMonitoringForRegion: ', data),
+    error => console.error()
+  );
+delegate.didEnterRegion()
+  .subscribe(
+    data => {
+      console.log('didEnterRegion: ', data);
+      this.showAlert('NOTIFICATION', 'YOU ARE IN.....');
+    }
+  );
+  delegate.didExitRegion()
+  .subscribe(
+    data => {
+      console.log('didEXITerRegion: ', data);
+      this.showAlert('NOTIFICATION', 'YOU ARE OUT.....');
+    }
+  );
+
+let beaconRegion = this.ibeacon.BeaconRegion('TCZ','23A01AF0-232A-4518-9C0E-323FB773F5EF');
+
+this.ibeacon.startMonitoringForRegion(beaconRegion)
+  .then(
+    () => console.log('Native layer received the request to monitoring'),
+    error => console.error('Native layer failed to begin monitoring: ', error)
+  );
+
+}
 }
  

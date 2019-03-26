@@ -11,6 +11,7 @@ import { AboutPage } from '../pages/about/about';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { Push } from '@ionic-native/push';
+import { IBeacon } from '@ionic-native/ibeacon';
 
 @NgModule({
   declarations: [
@@ -34,6 +35,7 @@ import { Push } from '@ionic-native/push';
   providers: [
     StatusBar,
     SplashScreen,
+    IBeacon,
     Push,
     {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
