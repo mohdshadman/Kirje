@@ -5,6 +5,7 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 import { Push, PushObject, PushOptions } from '@ionic-native/push';
 import { AlertController } from 'ionic-angular';
 import { Http , Headers, RequestOptions} from '@angular/http';
+//import { HttpClient,HttpParams } from '@angular/common/http';
 import { IBeacon } from '@ionic-native/ibeacon';
 
 
@@ -74,7 +75,16 @@ export class MyApp {
    
    pushObject.on('registration').subscribe((registration: any) => {
    //this.dopost(101);
+   localStorage.registrationId = registration.registrationId;
    console.log('Device registered', registration);
+   let url = 'http://192.168.191.1:8081/PsqHackPoc/materialView/sendUserInfo?device_id=' + localStorage.registrationId + '&name=abc';
+   this.http.get(url)
+      .subscribe(data => {
+        console.log("success");
+        console.log(data['_body']);
+       }, error => {
+        console.log("errrrrrrr",error);// Error getting the data
+      });
    });
    
    pushObject.on('error').subscribe(error => console.error('Error with Push plugin', error));
@@ -95,24 +105,28 @@ export class MyApp {
     });
     alert.present();
   }
-  dopost(id: any){
-    let url = "http://103.241.181.83:8000/api/deviceid.php?key=apnatimeaayega";
-    //let url ="http://jsonplaceholder.typicode.com/posts";
-    let headers = new Headers();
-    headers.append('Access-Control-Allow-Origin' , '*');
-    headers.append('Access-Control-Allow-Methods', '*');
+  dopost(status: string){
+    let url = 'http://192.168.191.1:8081/PsqHackPoc/materialView/sendDevId?device_id=' + localStorage.registrationId + '&status=' + status;
+    //let headers = new Headers();
+    //headers.append('Access-Control-Allow-Origin' , '*');
+    //headers.append('Access-Control-Allow-Methods', '*');
     //headers.append("Accept", 'application/json');
-    headers.append('Content-Type', 'application/json' );
+    //headers.append('Content-Type', 'application/json' );
     //let data =  new FormData();
      //data.append('device_id', id );
-     let data = {
-       'device_id': id
-      };
-      let options = new RequestOptions({ headers:headers, withCredentials: true});
+    //  let data = {
+    //    'device_id': id
+    //   };
+    //   let options = new RequestOptions({ headers:headers, withCredentials: true});
 
        //this.http.post(url,data, ).subscribe(data => console.log(data));
-      console.log(data);
-       this.http.post(url, data, options)
+     // console.log(data);
+    //  let params = new HttpParams();
+    // params.append('status', 'out');
+    // params.append('device_id', '1');
+   
+     
+     this.http.get(url)
       .subscribe(data => {
         console.log("success");
         console.log(data['_body']);
@@ -144,6 +158,7 @@ delegate.didEnterRegion()
     data => {
       console.log('didEnterRegion: ', data);
       this.showAlert('NOTIFICATION', 'YOU ARE IN.....');
+      this.dopost('in');
     }
   );
   delegate.didExitRegion()
@@ -151,6 +166,7 @@ delegate.didEnterRegion()
     data => {
       console.log('didEXITerRegion: ', data);
       this.showAlert('NOTIFICATION', 'YOU ARE OUT.....');
+      this.dopost('out');
     }
   );
 
